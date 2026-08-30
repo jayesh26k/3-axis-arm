@@ -1,4 +1,0 @@
-{
-  "name": "3-axis-arm",
-  "install": "pip install -r requirements.txt"
-}
