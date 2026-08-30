@@ -1,64 +1,72 @@
 # 3-axis-arm
 
-An interactive **3-axis robotic arm simulator** rendered in real time in the
-browser. Pose the arm by commanding each of its three joints and watch the tool
-center point (TCP) update live.
+A **MuJoCo** simulation of a 3-axis robotic arm (base yaw → shoulder pitch →
+elbow pitch). The model ships with primitive placeholder geometry so it runs
+immediately; drop in your **SolidWorks** STL exports later to simulate the real
+arm.
 
-<img src="public/arm.svg" alt="3-axis arm logo" width="48" height="48" />
+## Layout
 
-## Features
+```
+├── arm.xml            # MJCF model of the 3-axis arm (edit "FILL IN LATER" TODOs)
+├── simulate.py        # Run the sim: interactive viewer, mp4 record, or trajectory plot
+├── requirements.txt   # Python dependencies
+└── assets/            # <- put your SolidWorks base.stl / link1..3.stl here (fill in later)
+```
 
-- Real-time 3D visualization of a 3-axis arm (base yaw, shoulder pitch, elbow pitch).
-- Per-axis slider controls with live joint-angle readouts and enforced joint limits.
-- Forward-kinematics readout of the tool center point in world coordinates.
-- Orbit / zoom camera, `Home` and `Random` pose presets.
-
-## Tech stack
-
-- [Vite](https://vitejs.dev/) + [React](https://react.dev/) + TypeScript
-- [three.js](https://threejs.org/) via
-  [@react-three/fiber](https://github.com/pmndrs/react-three-fiber) and
-  [@react-three/drei](https://github.com/pmndrs/drei)
-
-## Getting started
+## Setup
 
 ```bash
-npm install      # install dependencies
-npm run dev      # start the dev server on http://localhost:5173
+pip install -r requirements.txt
 ```
 
-Other scripts:
+## Run
+
+Interactive viewer (local machine with a display):
 
 ```bash
-npm run build      # type-check and produce a production build in dist/
-npm run preview    # preview the production build
-npm run lint       # run ESLint
-npm run typecheck  # run the TypeScript compiler without emitting
+python simulate.py
 ```
 
-## Project structure
+Headless — record the demo motion to an mp4 (no display required):
 
-```
-├── index.html            # Vite entry HTML
-├── src/
-│   ├── main.tsx          # React entry point
-│   ├── App.tsx           # UI, control panel, and 3D canvas
-│   ├── RoboticArm.tsx    # Nested-group 3D arm model
-│   ├── kinematics.ts     # Joint definitions, limits, and forward kinematics
-│   └── index.css         # Styling
-└── .cursor/environment.json  # Cloud Agent dev environment
+```bash
+python simulate.py --record out/arm.mp4
 ```
 
-## Kinematics
+Headless — physics only, save a joint/TCP trajectory plot:
 
-The arm is modeled as three revolute joints in series:
+```bash
+python simulate.py --no-viewer --plot out/trajectory.png
+```
 
-| Axis | Joint    | Motion | Limits        |
-| ---- | -------- | ------ | ------------- |
-| 1    | Base     | Yaw    | -180° … 180°  |
-| 2    | Shoulder | Pitch  | -90° … 90°    |
-| 3    | Elbow    | Pitch  | -150° … 150°  |
+Useful flags: `--duration <seconds>`, `--record <path.mp4>`, `--plot <path.png>`,
+`--no-viewer`.
 
-`forwardKinematics()` in `src/kinematics.ts` computes the TCP world position
-using the same transform chain the renderer applies, so the on-screen readout
-always matches the rendered pose.
+> Headless rendering needs an OpenGL backend. On a headless server set
+> `MUJOCO_GL=egl` (GPU) or `MUJOCO_GL=osmesa` (software) before running with
+> `--record`.
+
+## The model
+
+| Axis | Joint    | Motion | Range         | Actuator |
+| ---- | -------- | ------ | ------------- | -------- |
+| 1    | `joint1` | Yaw    | ±180°         | `a1`     |
+| 2    | `joint2` | Pitch  | ±90°          | `a2`     |
+| 3    | `joint3` | Pitch  | ±150°         | `a3`     |
+
+Each joint is driven by a MuJoCo `position` actuator; `data.ctrl[:]` takes the
+three target angles in radians. A `tcp` site marks the tool center point and is
+logged via a `framepos` sensor.
+
+To command your own motion, edit `target_angles(t)` in `simulate.py`.
+
+## Adding your SolidWorks geometry (fill in later)
+
+1. In SolidWorks, **Save As → STL** for each link: `base`, `link1`, `link2`,
+   `link3`. Copy the files into [`assets/`](assets/).
+2. In [`arm.xml`](arm.xml), uncomment the `<mesh .../>` lines in `<asset>` and
+   switch each link's placeholder `<geom>` to `type="mesh" mesh="<name>"`.
+3. Confirm the STL units — `arm.xml` assumes millimetres (`scale="0.001 ..."`).
+
+See [`assets/README.md`](assets/README.md) for details.

@@ -1,11 +1,4 @@
 {
   "name": "3-axis-arm",
-  "install": "npm install",
-  "terminals": [
-    {
-      "name": "dev-server",
-      "command": "npm run dev"
-    }
-  ],
-  "ports": [5173]
+  "install": "pip install -r requirements.txt"
 }

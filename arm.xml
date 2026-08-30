@@ -1,0 +1,97 @@
+<mujoco model="three_axis_arm">
+  <!--
+    3-axis robotic arm (base yaw -> shoulder pitch -> elbow pitch).
+
+    The links below use primitive geometry (cylinders/capsules) so the model
+    is runnable right now. To use your real SolidWorks geometry, export each
+    link as an STL and drop it in the ./assets folder, then follow the
+    "fill in later" TODOs in the <asset> and <body> sections.
+  -->
+  <compiler angle="radian" autolimits="true" meshdir="assets"/>
+  <option gravity="0 0 -9.81" integrator="implicitfast" timestep="0.002"/>
+
+  <default>
+    <joint damping="2.0" armature="0.1"/>
+    <geom rgba="0.62 0.68 0.78 1" friction="1 0.05 0.001"/>
+    <position kp="120" forcerange="-80 80"/>
+  </default>
+
+  <asset>
+    <!--
+      ============================================================
+      SolidWorks meshes (FILL IN LATER)
+      ------------------------------------------------------------
+      1. In SolidWorks, save each link as an STL (File > Save As > .STL).
+      2. Note the export units. If the STL is in millimetres, keep the
+         scale="0.001 0.001 0.001" below so MuJoCo (metres) matches.
+      3. Copy the STL files into the ./assets folder.
+      4. Uncomment the <mesh> lines below and, in <worldbody>, switch each
+         link's placeholder <geom> over to type="mesh" mesh="<name>".
+      ============================================================
+    -->
+    <!-- <mesh name="base_mesh"  file="base.stl"  scale="0.001 0.001 0.001"/> -->
+    <!-- <mesh name="link1_mesh" file="link1.stl" scale="0.001 0.001 0.001"/> -->
+    <!-- <mesh name="link2_mesh" file="link2.stl" scale="0.001 0.001 0.001"/> -->
+    <!-- <mesh name="link3_mesh" file="link3.stl" scale="0.001 0.001 0.001"/> -->
+
+    <texture name="skybox" type="skybox" builtin="gradient"
+             rgb1="0.08 0.10 0.14" rgb2="0.02 0.02 0.03" width="512" height="512"/>
+    <texture name="grid" type="2d" builtin="checker"
+             rgb1="0.12 0.14 0.18" rgb2="0.18 0.20 0.24" width="512" height="512"/>
+    <material name="grid" texture="grid" texrepeat="10 10" reflectance="0.15"/>
+  </asset>
+
+  <worldbody>
+    <light name="top" pos="0 0 3" dir="0 0 -1" diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2"/>
+    <light name="side" pos="2 -2 2" dir="-1 1 -1" diffuse="0.4 0.4 0.4"/>
+    <geom name="floor" type="plane" size="4 4 0.1" material="grid"/>
+    <camera name="track" pos="1.6 -1.6 1.3" xyaxes="1 1 0 -0.4 0.4 1.2"/>
+
+    <!-- ===================== BASE (fixed to world) ===================== -->
+    <body name="base_link" pos="0 0 0">
+      <!-- FILL IN LATER: replace with type="mesh" mesh="base_mesh" -->
+      <geom name="base_geom" type="cylinder" size="0.12 0.05" pos="0 0 0.05"/>
+
+      <!-- ===================== AXIS 1: base yaw (Z) ===================== -->
+      <body name="link1" pos="0 0 0.10">
+        <joint name="joint1" type="hinge" axis="0 0 1" range="-3.1416 3.1416"/>
+        <inertial pos="0 0 0.08" mass="1.2" diaginertia="0.005 0.005 0.004"/>
+        <!-- FILL IN LATER: replace with type="mesh" mesh="link1_mesh" -->
+        <geom name="link1_geom" type="cylinder" size="0.07 0.08" pos="0 0 0.08"/>
+
+        <!-- ================== AXIS 2: shoulder pitch (Y) ================== -->
+        <body name="link2" pos="0 0 0.16">
+          <joint name="joint2" type="hinge" axis="0 1 0" range="-1.5708 1.5708"/>
+          <inertial pos="0 0 0.20" mass="0.9" diaginertia="0.02 0.02 0.002"/>
+          <!-- FILL IN LATER: replace with type="mesh" mesh="link2_mesh" -->
+          <geom name="link2_geom" type="capsule" fromto="0 0 0 0 0 0.40" size="0.05"/>
+
+          <!-- ================== AXIS 3: elbow pitch (Y) =================== -->
+          <body name="link3" pos="0 0 0.40">
+            <joint name="joint3" type="hinge" axis="0 1 0" range="-2.618 2.618"/>
+            <inertial pos="0 0 0.16" mass="0.6" diaginertia="0.01 0.01 0.001"/>
+            <!-- FILL IN LATER: replace with type="mesh" mesh="link3_mesh" -->
+            <geom name="link3_geom" type="capsule" fromto="0 0 0 0 0 0.32" size="0.04"/>
+
+            <!-- Tool center point (end effector) -->
+            <site name="tcp" pos="0 0 0.34" size="0.03" rgba="0.95 0.45 0.70 1"/>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <!-- Position-controlled joints; ctrlrange matches each joint's limits. -->
+    <position name="a1" joint="joint1" ctrlrange="-3.1416 3.1416"/>
+    <position name="a2" joint="joint2" ctrlrange="-1.5708 1.5708"/>
+    <position name="a3" joint="joint3" ctrlrange="-2.618 2.618"/>
+  </actuator>
+
+  <sensor>
+    <jointpos name="q1" joint="joint1"/>
+    <jointpos name="q2" joint="joint2"/>
+    <jointpos name="q3" joint="joint3"/>
+    <framepos name="tcp_pos" objtype="site" objname="tcp"/>
+  </sensor>
+</mujoco>
