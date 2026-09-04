@@ -1,0 +1,57 @@
+<mujoco model="arm-v2">
+  <compiler angle="radian"/>
+
+  <option gravity="0 0 -9.81" timestep="0.002"/>
+
+  <default>
+    <joint damping="0.5" frictionloss="0.05"/>
+  </default>
+
+  <asset>
+    <mesh name="base_link" content_type="model/stl" file="meshes/base_link.STL"/>
+    <mesh name="rotary-joint" content_type="model/stl" file="meshes/rotary-joint.STL"/>
+    <mesh name="shoulder-joint" content_type="model/stl" file="meshes/shoulder-joint.STL"/>
+    <mesh name="elbow-joint" content_type="model/stl" file="meshes/elbow-joint.STL"/>
+  </asset>
+
+  <worldbody>
+    <light diffuse="0.8 0.8 0.8" pos="0 0 2" dir="0 0 -1"/>
+    <geom name="floor" type="plane" size="1 1 0.05" rgba="0.9 0.9 0.9 1"/>
+
+    <body name="arm_root" pos="0 0 0.05">
+      <geom type="mesh" rgba="0.89412 0.89412 0.89412 1" mesh="base_link"/>
+      <body name="rotary-joint" pos="0 0 0.012" quat="-3.67321e-06 0 0 -1">
+        <inertial pos="0.0014279 0.0008236 0.038018" quat="0.965313 -0.0099258 0.0370408 0.258263" mass="0.11473" diaginertia="0.000116683 0.000113035 7.96012e-05"/>
+        <joint name="base-rotary" type="hinge" axis="0 0 1" range="-3.14 3.14"/>
+        <geom type="mesh" rgba="0.89412 0.89412 0.89412 1" mesh="rotary-joint"/>
+        <body name="shoulder-joint" pos="0.031972 0.018624 0.052745" quat="0.353674 0.353675 0.612304 0.612301">
+          <inertial pos="-0.057192 0.064325 0.010049" quat="0.272436 0.680972 -0.305497 0.607229" mass="0.16216" diaginertia="0.000483143 0.000459928 7.04292e-05"/>
+          <joint name="shoulder" type="hinge" axis="0 0 1" range="-3.14 1.57"/>
+          <geom type="mesh" rgba="0.89412 0.89412 0.89412 1" mesh="shoulder-joint"/>
+          <body name="elbow-joint" pos="-0.08992 0.10109 -0.014" quat="-3.67321e-06 -1 0 0">
+            <inertial pos="0.023437 -0.082514 0.010049" quat="0.449914 0.531023 -0.401202 0.595508" mass="0.16216" diaginertia="0.000483143 0.000459926 7.04303e-05"/>
+            <joint name="elbow" type="hinge" axis="0 0 1" range="-3.14 3.14"/>
+            <geom type="mesh" rgba="0.89412 0.89412 0.89412 1" mesh="elbow-joint"/>
+            <!-- End effector reference point at the tip of the elbow link -->
+            <site name="end_effector" pos="0 -0.16 0" size="0.008" rgba="1 0 0 1"/>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <!-- Example target object sitting in the workspace -->
+    <body name="target_object" pos="0.15 0.1 0.03">
+      <freejoint/>
+      <geom name="target_geom" type="box" size="0.015 0.015 0.015" rgba="0.9 0.2 0.2 1" mass="0.05"/>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <!-- Base: 15:1 ratio, NEMA17 needs ~0.24-0.39 Nm at motor shaft (85% drive efficiency) -->
+    <motor name="motor_base_rotary" joint="base-rotary" ctrlrange="-5 5"/>
+    <!-- Shoulder: 30:1 ratio, NEMA17 needs ~0.51 Nm at motor shaft - tightest margin, verify motor spec -->
+    <motor name="motor_shoulder" joint="shoulder" ctrlrange="-13 13"/>
+    <!-- Elbow: 30:1 ratio, NEMA17 needs ~0.24 Nm at motor shaft -->
+    <motor name="motor_elbow" joint="elbow" ctrlrange="-6.2 6.2"/>
+  </actuator>
+</mujoco>
