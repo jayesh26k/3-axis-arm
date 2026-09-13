@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="arm-v6-ik">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="2.3661E-18 -0.019937 2.4154E-18"
+        rpy="0 0 0" />
+      <mass
+        value="0.067122" />
+      <inertia
+        ixx="4.1725E-05"
+        ixy="9.8334E-22"
+        ixz="6.7643E-22"
+        iyy="4.5278E-05"
+        iyz="-5.7814E-21"
+        izz="4.1725E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89412 0.89412 0.89412 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="rotary">
+    <inertial>
+      <origin
+        xyz="0.0016484 -5.4453E-07 0.050018"
+        rpy="0 0 0" />
+      <mass
+        value="0.11473" />
+      <inertia
+        ixx="0.00011646"
+        ixy="2.1954E-10"
+        ixz="-2.8336E-06"
+        iyy="0.00011303"
+        iyz="-7.8031E-11"
+        izz="7.9819E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/rotary.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89412 0.89412 0.89412 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/rotary.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="rotary"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="rotary" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="shoulder">
+    <inertial>
+      <origin
+        xyz="-0.085778 7.1453E-07 0.020049"
+        rpy="0 0 0" />
+      <mass
+        value="0.16216" />
+      <inertia
+        ixx="7.5801E-05"
+        ixy="-2.1107E-09"
+        ixz="4.6784E-05"
+        iyy="0.00045993"
+        iyz="1.0257E-09"
+        izz="0.00047777" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/shoulder.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89412 0.89412 0.89412 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/shoulder.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder"
+    type="revolute">
+    <origin
+      xyz="0.027 0 0.065"
+      rpy="0 1.5708 0" />
+    <parent
+      link="rotary" />
+    <child
+      link="shoulder" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="elbow">
+    <inertial>
+      <origin
+        xyz="1.9571E-08 0.087078 0.012121"
+        rpy="0 0 0" />
+      <mass
+        value="0.26414" />
+      <inertia
+        ixx="0.00061693"
+        ixy="1.9089E-10"
+        ixz="-1.6288E-10"
+        iyy="8.3562E-05"
+        iyz="-2.0211E-05"
+        izz="0.00064911" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/elbow.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89412 0.89412 0.89412 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/elbow.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="elbow"
+    type="revolute">
+    <origin
+      xyz="-0.135 0 -0.004"
+      rpy="3.1416 0 -1.5708" />
+    <parent
+      link="shoulder" />
+    <child
+      link="elbow" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+</robot>

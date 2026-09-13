@@ -1,5 +1,5 @@
-<mujoco model="arm-v2">
-  <compiler angle="radian"/>
+<mujoco model="arm-v6-ik">
+  <compiler angle="radian" eulerseq="XYZ"/>
 
   <option gravity="0 0 -9.81" timestep="0.002"/>
 
@@ -9,49 +9,66 @@
 
   <asset>
     <mesh name="base_link" content_type="model/stl" file="meshes/base_link.STL"/>
-    <mesh name="rotary-joint" content_type="model/stl" file="meshes/rotary-joint.STL"/>
-    <mesh name="shoulder-joint" content_type="model/stl" file="meshes/shoulder-joint.STL"/>
-    <mesh name="elbow-joint" content_type="model/stl" file="meshes/elbow-joint.STL"/>
+    <mesh name="rotary" content_type="model/stl" file="meshes/rotary.STL"/>
+    <mesh name="shoulder" content_type="model/stl" file="meshes/shoulder.STL"/>
+    <mesh name="elbow" content_type="model/stl" file="meshes/elbow.STL"/>
   </asset>
 
   <worldbody>
     <light diffuse="0.8 0.8 0.8" pos="0 0 2" dir="0 0 -1"/>
     <geom name="floor" type="plane" size="1 1 0.05" rgba="0.9 0.9 0.9 1"/>
 
+    <!-- arm_root: wrapper shifted +50mm so the base sits flush on the floor
+         (fix carried over from previous versions). Inertial = base_link's
+         own values from the URDF; arm_root IS base_link, just offset. -->
     <body name="arm_root" pos="0 0 0.05">
+      <inertial pos="2.3661e-18 -0.019937 2.4154e-18" mass="0.067122"
+                fullinertia="4.1725e-05 4.5278e-05 4.1725e-05 9.8334e-22 6.7643e-22 -5.7814e-21"/>
       <geom type="mesh" rgba="0.89412 0.89412 0.89412 1" mesh="base_link"/>
-      <body name="rotary-joint" pos="0 0 0.012" quat="-3.67321e-06 0 0 -1">
-        <inertial pos="0.0014279 0.0008236 0.038018" quat="0.965313 -0.0099258 0.0370408 0.258263" mass="0.11473" diaginertia="0.000116683 0.000113035 7.96012e-05"/>
+
+      <!-- Base yaw: rotates about vertical Z -->
+      <body name="rotary" pos="0 0 0" euler="0 0 -1.5708">
+        <inertial pos="0.0016484 -5.4453e-07 0.050018" mass="0.11473"
+                  fullinertia="0.00011646 0.00011303 7.9819e-05 2.1954e-10 -2.8336e-06 -7.8031e-11"/>
         <joint name="base-rotary" type="hinge" axis="0 0 1" range="-3.14 3.14"/>
-        <geom type="mesh" rgba="0.89412 0.89412 0.89412 1" mesh="rotary-joint"/>
-        <body name="shoulder-joint" pos="0.031972 0.018624 0.052745" quat="0.353674 0.353675 0.612304 0.612301">
-          <inertial pos="-0.057192 0.064325 0.010049" quat="0.272436 0.680972 -0.305497 0.607229" mass="0.16216" diaginertia="0.000483143 0.000459928 7.04292e-05"/>
-          <joint name="shoulder" type="hinge" axis="0 0 1" range="-3.14 1.57"/>
-          <geom type="mesh" rgba="0.89412 0.89412 0.89412 1" mesh="shoulder-joint"/>
-          <body name="elbow-joint" pos="-0.08992 0.10109 -0.014" quat="-3.67321e-06 -1 0 0">
-            <inertial pos="0.023437 -0.082514 0.010049" quat="0.449914 0.531023 -0.401202 0.595508" mass="0.16216" diaginertia="0.000483143 0.000459926 7.04303e-05"/>
+        <geom type="mesh" rgba="0.89412 0.89412 0.89412 1" mesh="rotary"/>
+
+        <!-- Shoulder pitch: rotates about a horizontal axis -->
+        <body name="shoulder" pos="0.027 0 0.065" euler="0 1.5708 0">
+          <inertial pos="-0.085778 7.1453e-07 0.020049" mass="0.16216"
+                    fullinertia="7.5801e-05 0.00045993 0.00047777 -2.1107e-09 4.6784e-05 1.0257e-09"/>
+          <joint name="shoulder" type="hinge" axis="0 0 1" range="-2.13 2.13"/>
+          <geom type="mesh" rgba="0.89412 0.89412 0.89412 1" mesh="shoulder"/>
+
+          <!-- Elbow pitch: rotates about the same horizontal axis direction as shoulder -->
+          <body name="elbow" pos="-0.135 0 -0.004" euler="3.1416 0 -1.5708">
+            <inertial pos="1.9571e-08 0.087078 0.012121" mass="0.26414"
+                      fullinertia="0.00061693 8.3562e-05 0.00064911 1.9089e-10 -1.6288e-10 -2.0211e-05"/>
             <joint name="elbow" type="hinge" axis="0 0 1" range="-3.14 3.14"/>
-            <geom type="mesh" rgba="0.89412 0.89412 0.89412 1" mesh="elbow-joint"/>
-            <!-- End effector reference point at the tip of the elbow link -->
-            <site name="end_effector" pos="0 -0.16 0" size="0.008" rgba="1 0 0 1"/>
+            <geom type="mesh" rgba="0.89412 0.89412 0.89412 1" mesh="elbow"/>
+
+            <!-- End-effector site: PLACEHOLDER at pos="0 0.135 0" (local Y,
+                 matching the elbow link's inertial pos which is dominant in
+                 Y; suggests Y is this link's extension axis). This is a
+                 GUESS, not measured. Re-run find_elbow_tip_offset.py against
+                 the new elbow.STL mesh and update this before trusting any
+                 IK results built on it. -->
+            <site name="end_effector" pos="0 0.165 0" size="0.008" rgba="1 0 0 1"/>
           </body>
         </body>
       </body>
     </body>
 
     <!-- Example target object sitting in the workspace -->
-    <body name="target_object" pos="0.15 0.1 0.03">
+    <body name="target_object" pos="0.15 0.0 0.0">
       <freejoint/>
       <geom name="target_geom" type="box" size="0.015 0.015 0.015" rgba="0.9 0.2 0.2 1" mass="0.05"/>
     </body>
   </worldbody>
 
   <actuator>
-    <!-- Base: 15:1 ratio, NEMA17 needs ~0.24-0.39 Nm at motor shaft (85% drive efficiency) -->
     <motor name="motor_base_rotary" joint="base-rotary" ctrlrange="-5 5"/>
-    <!-- Shoulder: 30:1 ratio, NEMA17 needs ~0.51 Nm at motor shaft - tightest margin, verify motor spec -->
     <motor name="motor_shoulder" joint="shoulder" ctrlrange="-13 13"/>
-    <!-- Elbow: 30:1 ratio, NEMA17 needs ~0.24 Nm at motor shaft -->
     <motor name="motor_elbow" joint="elbow" ctrlrange="-6.2 6.2"/>
   </actuator>
 </mujoco>
